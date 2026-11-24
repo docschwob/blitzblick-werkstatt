@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Blitzblick-Werkstatt: Zahlen schnell sehen – simultane und quasi-simultane Anzahlerfassung mit sechsstufiger Schwierigkeitsleiter (GIMB Münster).">
+<title>Blitzblick-Werkstatt</title>
+<style>
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Baloo 2";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/baloo-2-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Baloo 2";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/baloo-2-latin-700-normal.woff2) format("woff2")}
+:root{
+  --board:#E4EBE7; --paper:#FBFCFB; --panel:#F5F8F6; --ink:#1B2927; --muted:#56665F; --line:#CBD5CF;
+  --accent:#1D6683; --accent-soft:#D6E6EC; --accent-ink:#FFFFFF;
+  --ok:#2E7D57; --miss:#1E8FC8; --over:#D8462E;
+  --red:#D7303A; --blue:#1F62C4; --mono:#3A4A46;
+  --cell:#FFFFFF; --cell-line:#9FB0A9; --five:#33413D; --cover:#2F5E6E; --cover-ink:#F2F7F6;
+  --loop:#E08A00;
+  --f-display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --board:#1E2725; --paper:#232D2B; --panel:#151C1B; --ink:#E3ECE8; --muted:#9AABA4; --line:#2F3B38;
+  --accent:#6CB8D6; --accent-soft:#1F3A45; --accent-ink:#0D1A1F;
+  --ok:#4FB383; --miss:#52C6F5; --over:#FF7A5E;
+  --red:#F0525A; --blue:#5A95F0; --mono:#C9D6D1;
+  --cell:#2A3633; --cell-line:#4E5E59; --five:#B9C8C2; --cover:#24485A; --cover-ink:#E3ECE8;
+  --loop:#FFB13B;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --board:#1E2725; --paper:#232D2B; --panel:#151C1B; --ink:#E3ECE8; --muted:#9AABA4; --line:#2F3B38;
+  --accent:#6CB8D6; --accent-soft:#1F3A45; --accent-ink:#0D1A1F;
+  --ok:#4FB383; --miss:#52C6F5; --over:#FF7A5E;
+  --red:#F0525A; --blue:#5A95F0; --mono:#C9D6D1;
+  --cell:#2A3633; --cell-line:#4E5E59; --five:#B9C8C2; --cover:#24485A; --cover-ink:#E3ECE8;
+  --loop:#FFB13B;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--panel);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+.app{height:100%;display:grid;grid-template-columns:minmax(280px,330px) 1fr;grid-template-rows:auto 1fr;
+  padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.logo{width:34px;height:34px;flex:none}
+h1{font-family:var(--f-display);font-weight:700;font-size:1.45rem;margin:0;letter-spacing:.01em;line-height:1}
+header .sub{color:var(--muted);font-size:.85rem}
+header .spacer{flex:1}
+.panel{overflow:auto;padding:16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:20px;min-width:0}
+.panel h2{font-family:var(--f-display);font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0 0 8px;font-weight:700}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--board);border-radius:var(--r);padding:4px;gap:4px}
+.seg button{border:0;background:transparent;border-radius:7px;padding:8px 4px;font-weight:700;font-size:.88rem;cursor:pointer;min-height:44px;line-height:1.15}
+.seg button b{color:var(--muted);font-variant-numeric:tabular-nums;margin-right:2px}
+.seg button[aria-pressed="true"]{background:var(--panel);box-shadow:0 1px 2px rgba(0,0,0,.12);color:var(--accent)}
+.seg button[aria-pressed="true"] b{color:inherit}
+.modehint{color:var(--muted);font-size:.85rem;margin:8px 0 0}
+.sets{display:grid;gap:6px}
+.setbtn{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:6px 10px;cursor:pointer;min-height:48px;text-align:left}
+.setbtn svg{width:46px;height:30px;flex:none}
+.setbtn .sn{font-weight:700;display:block;line-height:1.2}
+.setbtn .sk{font-size:.78rem;color:var(--muted);display:block;line-height:1.2}
+.setbtn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;margin-top:10px}
+.cardbtn{border:1px solid var(--line);background:var(--panel);border-radius:8px;min-height:44px;font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums}
+.cardbtn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.cardbtn.done{box-shadow:inset 0 -4px 0 var(--ok)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:9px 14px;font-weight:700;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.small{min-height:40px;padding:6px 10px;font-size:.86rem}
+.btn .cnt{background:var(--accent-soft);color:var(--ink);border-radius:999px;padding:0 7px;font-size:.78rem}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.chk input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.note{color:var(--muted);font-size:.8rem;margin:6px 0 0}
+.durs{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:.88rem;margin-top:6px}
+.durs input{width:100%;accent-color:var(--accent)}
+.durs output{font-variant-numeric:tabular-nums;min-width:3.2em;text-align:right}
+.selrow{display:flex;gap:8px;align-items:center;font-size:.9rem;margin-top:6px}
+.selrow select{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 8px;min-height:40px}
+code{font-size:.85em;background:var(--board);padding:1px 4px;border-radius:4px}
+.wort{background:var(--board);border-radius:var(--r);padding:8px 12px;margin-top:8px;font-size:.92rem}
+.wort p{margin:2px 0}
+.log{max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:var(--r);margin:8px 0 0;padding:4px 0;list-style:none;font-size:.82rem}
+.log li{padding:3px 10px;display:flex;gap:8px}
+.log li .tm{color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.log li.cur{background:var(--accent-soft)}
+.log:empty::before{content:"Noch keine Schritte.";display:block;padding:6px 10px;color:var(--muted)}
+.stage{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--board)}
+.card{padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line);display:grid;gap:4px}
+.card-k{font-family:var(--f-display);font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
+#cardBody{max-width:64ch;font-size:1.12rem;line-height:1.45}
+#cardBody p{margin:0}
+#cardBody .worte{font-family:var(--f-display);font-size:1.35rem;font-weight:600;color:var(--accent)}
+.boardwrap{flex:1;position:relative;min-height:0}
+#board{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;display:block}
+.frame{fill:var(--paper);stroke:var(--cell-line);stroke-width:.05}
+.cellbox{fill:var(--cell);stroke:var(--cell-line);stroke-width:.03}
+.five{stroke:var(--five);stroke-width:.07;stroke-linecap:round}
+.five.strong{stroke-width:.12}
+.emptydot{fill:none;stroke:var(--cell-line);stroke-width:.04}
+.dot.r{fill:var(--red)} .dot.b{fill:var(--blue)}
+.mono .dot.r,.mono .dot.b{fill:var(--mono)}
+.die{fill:var(--paper);stroke:var(--cell-line);stroke-width:.07}
+.winkel{fill:var(--cover);opacity:.88}
+.loop{fill:var(--loop);fill-opacity:.12;stroke:var(--loop);stroke-width:.09;stroke-linejoin:round;stroke-linecap:round}
+.looplbl{fill:var(--loop);font:700 .5px var(--f-body)}
+.miss{fill:none;stroke:var(--miss);stroke-width:.09;stroke-dasharray:.16 .1}
+.overm{fill:none;stroke:var(--over);stroke-width:.11}
+.kcur{fill:none;stroke:var(--accent);stroke-width:.08;stroke-dasharray:.2 .12}
+.cover{position:absolute;inset:14px;border-radius:18px;background:var(--cover);color:var(--cover-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px;
+  background-image:radial-gradient(rgba(255,255,255,.07) 1.5px,transparent 1.6px);background-size:22px 22px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.cover .q{font-family:var(--f-display);font-size:clamp(3rem,10vw,6rem);font-weight:700;line-height:1}
+.cover .ct{font-size:1.1rem;max-width:30ch}
+.cover .btn{font-size:1.25rem;min-height:60px;padding:10px 28px;border:0;background:#FFFFFF;color:#173A47}
+.timer{position:absolute;left:14px;right:14px;top:6px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:var(--accent);transform-origin:left}
+.feedback{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:10px 12px 10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;box-shadow:0 4px 18px rgba(0,0,0,.14);max-width:calc(100% - 32px);font-weight:700;z-index:3}
+.feedback.ok{border-color:var(--ok);color:var(--ok)}
+.feedback .det{font-weight:400;color:var(--ink);flex-basis:100%;text-align:center;font-size:.95rem}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-weight:400;font-size:.82rem;color:var(--ink);justify-content:center;flex-basis:100%}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line);background:var(--panel)}
+.answer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;min-width:0}
+.numbox{min-width:3.4ch;height:52px;border:2px solid var(--line);border-radius:10px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:2rem;font-weight:700;padding:0 10px;font-variant-numeric:tabular-nums}
+.numbox.empty{color:var(--muted);font-size:1rem;font-family:var(--f-body);font-weight:400}
+.numlbl{font-size:.85rem;color:var(--muted)}
+.pad{display:flex;flex-wrap:wrap;gap:4px}
+.pad button{width:44px;height:48px;border:1px solid var(--line);background:var(--paper);border-radius:8px;font-weight:700;font-size:1.2rem;cursor:pointer;font-variant-numeric:tabular-nums}
+.pad button:active{background:var(--accent-soft)}
+.colors{display:flex;gap:6px;align-items:center}
+.colors button{width:44px;height:44px;border-radius:50%;border:3px solid transparent;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
+.colors button span{width:30px;height:30px;border-radius:50%;display:block}
+.colors button[aria-pressed="true"]{border-color:var(--ink)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.replaybar{position:absolute;left:12px;right:12px;bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 4px 18px rgba(0,0,0,.12);z-index:4}
+.replaybar input{flex:1;min-width:120px;accent-color:var(--accent)}
+.replaybar .rc{font-variant-numeric:tabular-nums;font-size:.85rem;color:var(--muted)}
+.replaybar .rt{flex-basis:100%;font-size:.88rem}
+.praesctl{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:12px;display:flex;gap:8px;z-index:5;opacity:.85}
+.praesctl:hover{opacity:1}
+body.praes .panel, body.praes header, body.praes .bar{display:none}
+body.praes .app{grid-template-columns:1fr;grid-template-rows:1fr}
+body.praes .stage{grid-column:1/-1}
+body.praes .card{border-bottom:0;background:transparent;padding:14px 24px}
+body.praes #cardBody{font-size:1.5rem;max-width:none}
+body.praes .card-k{display:none}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto auto auto;height:auto}
+  html,body{height:auto}
+  .stage{height:78svh;min-height:520px;order:2}
+  .panel{order:3;border-right:0;border-top:1px solid var(--line);overflow:visible}
+  header .sub{display:none}
+  body.praes .stage{height:100svh}
+  .pad button{width:40px}
+  .answer{flex:1 1 100%}
+  .actions{margin-left:0;width:100%}
+  .actions .btn{flex:1}
+  header{flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){ .timer i{transition:none!important} }
+.impressum{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);font-size:.78rem;line-height:1.45;color:var(--muted);display:grid;gap:4px}
+.impressum p{margin:0}
+.impressum a{color:var(--accent)}
+.impressum summary{cursor:pointer;color:var(--ink);font-weight:700}
+.impressum details p{margin-top:6px}
+details.lk summary{cursor:pointer;font-weight:700}
+details.lk p,details.lk li{font-size:.85rem}
+details.lk ul{padding-left:18px;margin:6px 0}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <svg class="logo" viewBox="0 0 34 34" aria-hidden="true">
+      <rect x="1" y="7" width="32" height="20" rx="4" fill="var(--paper)" stroke="var(--cell-line)"/>
+      <g fill="var(--red)"><circle cx="5.5" cy="12" r="2.4"/><circle cx="11.5" cy="12" r="2.4"/><circle cx="17.5" cy="12" r="2.4"/><circle cx="23.5" cy="12" r="2.4"/><circle cx="29.5" cy="12" r="2.4"/><circle cx="5.5" cy="21" r="2.4"/><circle cx="11.5" cy="21" r="2.4"/></g>
+      <g fill="none" stroke="var(--cell-line)" stroke-width="1"><circle cx="17.5" cy="21" r="2.2"/><circle cx="23.5" cy="21" r="2.2"/><circle cx="29.5" cy="21" r="2.2"/></g>
+      <path d="M21 1 L15 14 H20 L16 25 L27 10 H21.5 L25 1Z" fill="var(--loop)" stroke="var(--panel)" stroke-width="1.2" stroke-linejoin="round" transform="translate(4 4) scale(.62)"/>
+    </svg>
+    <div><h1>Blitzblick-Werkstatt</h1><div class="sub">Zahlen schnell sehen – Klasse 1 bis 4</div></div>
+    <div class="spacer"></div>
+    <button class="btn small" id="btnTheme" title="Helles oder dunkles Design">Design: Auto</button>
+    <button class="btn small" id="btnPraes" title="Präsentationsmodus für den Beamer">Präsentieren</button>
+  </header>
+
+  <aside class="panel" aria-label="Werkzeuge">
+    <section>
+      <h2>Schwierigkeitsleiter</h2>
+      <div class="seg" role="group" aria-label="Stufe" id="stufen"></div>
+      <p class="modehint" id="modeHint"></p>
+    </section>
+
+    <section>
+      <h2>Darstellung</h2>
+      <div class="sets" id="sets"></div>
+      <div class="cards" id="cards" aria-label="Karten"></div>
+    </section>
+
+    <section>
+      <h2>Hilfen</h2>
+      <div class="row" id="helps"></div>
+      <div class="wort" id="wortspeicher" hidden></div>
+    </section>
+
+    <section>
+      <h2>Verlauf</h2>
+      <div class="row">
+        <button class="btn small" id="btnUndo">Rückgängig</button>
+        <button class="btn small" id="btnReplay">Wiedergabe</button>
+        <button class="btn small" id="btnReset">Neu beginnen</button>
+      </div>
+      <ol class="log" id="log"></ol>
+      <div class="row" style="margin-top:8px">
+        <button class="btn small" id="btnCsv" title="Alle Versuche dieser Sitzung als Tabelle (CSV) speichern">Protokoll als Tabelle</button>
+        <button class="btn small" id="btnJson" title="Alle Versuche mit allen Schritten als JSON speichern">Protokoll als JSON</button>
+      </div>
+      <p class="note">Das Protokoll gibt es nur in diesem Fenster. Es wird nur gespeichert, wenn du es selbst als Datei sicherst.</p>
+    </section>
+
+    <section>
+      <h2>Einstellungen</h2>
+      <label class="chk"><input type="checkbox" id="optCheck" checked><span>Prüfen-Knopf anzeigen</span></label>
+      <label class="chk"><input type="checkbox" id="optLegen"><span>Stufe 2–4: nachlegen statt Zahl tippen</span></label>
+      <label class="chk"><input type="checkbox" id="optMono"><span>Alle Plättchen in einer Farbe</span></label>
+      <label class="chk"><input type="checkbox" id="optSnap" checked><span>Einrasten beim freien Legen<br><span class="note">Punkte legen sich an Würfelaugen bzw. ein unsichtbares Raster an.</span></span></label>
+      <div class="durs">
+        <span>Stufe 2</span><input type="range" id="dur2" min="1" max="6" step="0.5" value="3"><output id="dur2o"></output>
+        <span>Stufe 3</span><input type="range" id="dur3" min="0.3" max="3" step="0.1" value="1"><output id="dur3o"></output>
+        <span>Stufe 4</span><input type="range" id="dur4" min="0.2" max="3" step="0.1" value="0.7"><output id="dur4o"></output>
+      </div>
+      <p class="note">Zeigedauer: so kurz, dass nicht abgezählt werden kann. Ein Link mit <code>#ohne-pruefen</code> öffnet die Werkstatt ohne Prüfen-Knopf, z.&nbsp;B. für Reflexionsphasen. Direkt verlinken: <code>#satz=zwanzigerfeld&amp;stufe=3&amp;karte=4</code>.</p>
+    </section>
+
+    <section>
+      <details class="lk">
+        <summary>Hinweise für Lehrkräfte</summary>
+        <p>Jede Blitzblick-Übung braucht zuerst eine Grundlegung: Kinder beschreiben, <em>wie</em> sie die Anzahl gesehen haben („Ich sehe 5 und 2“). Erst danach wird das Zeigen kürzer. Ein zu früher Wechsel zum reinen Tempo-Training schadet (Wittmann/Müller, Zahlenbuch).</p>
+        <ul>
+          <li>Leitfragen: „Wie hast du das so schnell gesehen?“ – „Kann man es auch anders sehen?“</li>
+          <li>Stufe 1 und das Einkreisen nach dem Aufdecken machen Deutungen sichtbar; das Protokoll hält fest, welche Teilmengen eingekreist wurden.</li>
+          <li>Bei Schwierigkeiten länger zeigen (Hilfe „Länger zeigen“) statt die Zahl zu verraten.</li>
+        </ul>
+        <p>Übungsformate nach: Das Zahlenbuch 1–3 (Blitzrechnen „Wie viele?“, Zehnerfelder, Kraft der Fünf, Hunderterfeld), PIKAS / Mathe inklusiv „Schnelles Sehen“, Mahiko „Blitzgucken“ und „Blitzblick-Übungen ZR 100“. Alle Zahlbilder und Texte sind eigene Gestaltungen.</p>
+      </details>
+    </section>
+
+    <footer class="impressum">
+      <p>Urheber: Dr. Simeon Schwob (GIMB, Universität Münster) · privates Angebot</p>
+      <p>Keine Datenerhebung · Code: MIT · Materialien: CC BY 4.0 · <a href="https://docschwob.github.io/impressum.html" target="_blank" rel="noopener">Impressum</a></p>
+      <details>
+        <summary>Lizenz und Datenschutz</summary>
+        <p>Die App sendet keine Eingaben an einen Server. Nur die Einstellungen (z.&nbsp;B. Zeigedauer, Design) werden in diesem Browser gespeichert (localStorage). Das Protokoll existiert nur in diesem Fenster und ist beim Schließen weg, außer du speicherst es selbst als Datei.</p>
+        <p>Die Seite wird über GitHub Pages bereitgestellt. GitHub verarbeitet dabei technisch notwendige Zugriffsdaten wie die IP-Adresse (<a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub</a>). Schriften liegen auf demselben Server, Dienste Dritter sind nicht eingebunden.</p>
+        <p>Programmcode: <a href="https://opensource.org/license/mit" target="_blank" rel="noopener">MIT-Lizenz</a>. Aufgaben, Texte und Abbildungen: <a href="https://creativecommons.org/licenses/by/4.0/deed.de" target="_blank" rel="noopener">CC BY 4.0</a>. Schriften Atkinson Hyperlegible und Baloo 2: SIL Open Font License 1.1.</p>
+        <p><a href="https://github.com/docschwob/blitzblick-werkstatt" target="_blank" rel="noopener">Quellcode auf GitHub</a></p>
+      </details>
+    </footer>
+  </aside>
+
+  <main class="stage">
+    <div class="card">
+      <div class="card-k" id="cardK"></div>
+      <div id="cardBody" aria-live="polite"></div>
+    </div>
+    <div class="boardwrap" id="boardwrap">
+      <svg id="board" role="img" aria-label="Arbeitsfläche"></svg>
+      <div class="timer" id="timer" hidden><i id="timerBar"></i></div>
+      <div class="cover" id="cover" hidden>
+        <div class="q" id="coverQ">?</div>
+        <div class="ct" id="coverT"></div>
+        <button class="btn" id="coverBtn">Zeigen</button>
+      </div>
+      <div class="feedback" id="feedback" role="status" hidden></div>
+      <div class="replaybar" id="replaybar" hidden>
+        <button class="btn small" id="rpPlay">Abspielen</button>
+        <input type="range" id="rpSlider" min="0" max="0" value="0" aria-label="Schritt">
+        <span class="rc" id="rpCount"></span>
+        <button class="btn small" id="rpClose">Schließen</button>
+        <div class="rt" id="rpText"></div>
+      </div>
+      <div class="praesctl" id="praesctl" hidden>
+        <button class="btn" id="pPrev" aria-label="Vorige Karte">◀</button>
+        <button class="btn primary" id="pShow">Zeigen</button>
+        <button class="btn" id="pOpen">Aufdecken</button>
+        <button class="btn" id="pNext" aria-label="Nächste Karte">▶</button>
+        <button class="btn" id="pExit">Beenden</button>
+      </div>
+    </div>
+    <div class="bar" id="bar">
+      <div class="answer" id="answer">
+        <div id="numWrap" style="display:flex;align-items:center;gap:8px">
+          <span class="numlbl" id="numLbl">Deine Zahl</span>
+          <div class="numbox empty" id="numbox" aria-live="polite">–</div>
+        </div>
+        <div class="pad" id="pad" aria-label="Ziffern"></div>
+        <div class="colors" id="colors" aria-label="Plättchenfarbe">
+          <button data-c="r" aria-pressed="true" aria-label="rotes Plättchen"><span style="background:var(--red)"></span></button>
+          <button data-c="b" aria-pressed="false" aria-label="blaues Plättchen"><span style="background:var(--blue)"></span></button>
+          <span class="numlbl">Tippe, um zu legen. Tippe ein Plättchen an, um es wegzunehmen.</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btnShow">Zeigen</button>
+        <button class="btn" id="btnOpen">Aufdecken</button>
+        <button class="btn" id="btnTest">Blitz testen</button>
+        <button class="btn primary" id="btnCheck">Prüfen</button>
+        <button class="btn" id="btnNext">Nächste Karte ▶</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   Blitzblick-Werkstatt · Dr. Simeon Schwob (GIMB, Universität Münster)
+   Code: MIT · Aufgaben, Texte, Abbildungen: CC BY 4.0
+   Kennzeichnung: selbst:true = Text/Zahlbild selbst formuliert bzw. gestaltet
+   (fachlich zu prüfen, siehe PRUEFLISTE.md). quelle = Herkunft des Formats.
+   ========================================================================== */
+
+/* ---------- Schwierigkeitsleiter ---------- */
+const STUFEN = [
+  {n:1, kurz:"Ansehen",  hint:"Das Bild bleibt stehen. Zahl nennen und einkreisen, wie man sie sieht."},
+  {n:2, kurz:"Kurz",     hint:"Das Bild kommt einige Sekunden (einstellbar), dann wird es abgedeckt."},
+  {n:3, kurz:"Blitz",    hint:"Das Bild blitzt nur kurz auf."},
+  {n:4, kurz:"Ohne Linien", hint:"Ganz kurz und ohne Rahmen und Fünferlinien."},
+  {n:5, kurz:"Worte",    hint:"Kein Bild, nur eine Beschreibung. Das Kind legt nach."},
+  {n:6, kurz:"Erfinden", hint:"Selbst eine Zahl so legen, dass man sie schnell sieht – und blitzen lassen."}
+];
+
+/* ---------- Darstellungen ---------- */
+const GAP = 0.4;
+const SETS = {
+  wuerfel:{name:"Würfelbilder", kl:"Klasse 1", kind:"dice", quelle:"Zahlenbuch 1 (Würfelbilder); PIKAS AKS"},
+  punkte:{name:"Punkte in Gruppen", kl:"Klasse 1", kind:"free", quelle:"Zahlenbuch 1, S. 17 „Zahlen schnell sehen“ / Blitzrechnen „Wie viele?“"},
+  zehnerfeld:{name:"Zehnerfeld", kl:"Klasse 1", kind:"grid", cols:5, rows:2, gc:0, gr:0, quelle:"Zahlenbuch 1, S. 18/19; PIKAS Mathe inklusiv „Schnelles Sehen“"},
+  zehnerstreifen:{name:"Zehnerstreifen", kl:"Klasse 1", kind:"grid", cols:10, rows:1, gc:5, gr:0, quelle:"Zahlenbuch 1, S. 18/19 (linear); Mahiko „Blitzgucken“"},
+  zwanzigerfeld:{name:"Zwanzigerfeld", kl:"Klasse 1", kind:"grid", cols:10, rows:2, gc:5, gr:0, quelle:"Zahlenbuch 1 (Kraft der Fünf, Zwanzigerfeld); Mahiko „Blitzgucken“"},
+  hunderterfeld:{name:"Hunderterfeld", kl:"Klasse 2", kind:"grid", cols:10, rows:10, gc:5, gr:5, winkel:true, quelle:"Zahlenbuch 2, S. 28 „Wie viele?“; Mahiko „Blitzblick-Übungen ZR 100“"}
+};
+
+/* Hilfsfunktionen zum Erzeugen von Kartenbildern */
+function rowsOf(n, cols){ // Plättchen zeilenweise von links oben (Konvention Zahlenbuch)
+  const rows=[]; let left=n;
+  for(let r=0;r<Math.max(1,Math.ceil(n/cols));r++){ const k=Math.min(cols,left); rows.push("r".repeat(k)+".".repeat(cols-k)); left-=k; }
+  return rows;
+}
+function hundert(n){ const rows=rowsOf(n,10); while(rows.length<10) rows.push("..........".slice(0)); return rows; }
+const PAT = { // Punktmuster für Gruppen (Einheiten), Ursprung links oben
+  2:[[0,0],[1,0]], 3:[[0,1],[.5,0],[1,1]], 4:[[0,0],[1,0],[0,1],[1,1]],
+  5:[[0,0],[1.4,0],[.7,.7],[0,1.4],[1.4,1.4]], 6:[[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]], 1:[[0,0]]
+};
+function grp(k, ox, oy, c){ return PAT[k].map(([x,y])=>({x:ox+x, y:oy+y, c:c||"r", g:0})); }
+function groups(list){ // list: [[k, ox, oy], ...]
+  const out=[]; list.forEach(([k,ox,oy,c],gi)=>grp(k,ox,oy,c).forEach(d=>{d.g=gi; out.push(d);})); return out;
+}
+
+/* ---------- Karten (Aufgaben als Datenstruktur – Grundlage für späteren Lehrkraft-Editor) ----------
+   grid: rows = Zeilen aus r (rot), b (blau), . (leer)
+   dice: dice = Augenzahlen der Würfel
+   free: dots = [{x,y,c,g}] in Einheiten, Feld 10 × 6
+   worte = Beschreibung für Stufe 5 (selbst formuliert, prüfen) */
+const CARDS = {
+  wuerfel:[
+    {n:3, dice:[3], worte:"Ein Würfel zeigt 3.", selbst:true},
+    {n:5, dice:[5], worte:"Ein Würfel zeigt 5.", selbst:true},
+    {n:4, dice:[4], worte:"Ein Würfel zeigt 4.", selbst:true},
+    {n:6, dice:[6], worte:"Ein Würfel zeigt 6.", selbst:true},
+    {n:7, dice:[4,3], worte:"Ein Würfel zeigt 4, der andere 3.", selbst:true},
+    {n:8, dice:[5,3], worte:"Ein Würfel zeigt 5, der andere 3.", selbst:true},
+    {n:8, dice:[6,2], worte:"Ein Würfel zeigt 6, der andere 2.", selbst:true},
+    {n:10, dice:[5,5], worte:"Beide Würfel zeigen 5.", selbst:true},
+    {n:10, dice:[6,4], worte:"Ein Würfel zeigt 6, der andere 4.", selbst:true},
+    {n:12, dice:[6,6], worte:"Beide Würfel zeigen 6.", selbst:true}
+  ],
+  punkte:[
+    {n:3, dots:groups([[3,4.5,2]]), worte:"Lege 3 Punkte wie ein Dreieck.", selbst:true},
+    {n:4, dots:groups([[4,4.5,2]]), worte:"Lege 4 Punkte wie ein Quadrat.", selbst:true},
+    {n:5, dots:groups([[2,2,2.5],[3,6,2]]), worte:"Lege eine Zweiergruppe und eine Dreiergruppe.", selbst:true},
+    {n:6, dots:groups([[3,2,2],[3,6,2]]), worte:"Lege zwei Dreiergruppen.", selbst:true},
+    {n:7, dots:groups([[4,2,2],[3,6,2]]), worte:"Lege eine Vierergruppe und eine Dreiergruppe.", selbst:true, quelle:"Zahlenbuch 1, S. 17: „Ich sehe 4 und 3“"},
+    {n:8, dots:groups([[4,2,2],[4,6,2]]), worte:"Lege zwei Vierergruppen.", selbst:true, quelle:"Zahlenbuch 1, S. 17: „Ich sehe 4 und 4“"},
+    {n:7, dots:groups([[5,1.6,1.8],[2,6.2,2.5]]), worte:"Lege eine Fünf wie auf dem Würfel und daneben 2.", selbst:true},
+    {n:8, dots:groups([[3,1,2],[3,4.5,2],[2,8,2.5]]), worte:"Lege zwei Dreiergruppen und eine Zweiergruppe.", selbst:true},
+    {n:9, dots:groups([[3,1,2],[3,4.5,2],[3,8,2]]), worte:"Lege drei Dreiergruppen.", selbst:true},
+    {n:4, dots:[[2.2,1.4],[6.7,2.1],[4.1,4.3],[7.9,4.6]].map(([x,y])=>({x,y,c:"r",g:0})), worte:"Lege 4 Punkte durcheinander.", selbst:true, ungeordnet:true},
+    {n:7, dots:[[1.3,1.2],[3.8,0.9],[6.4,1.6],[2.4,3.3],[5.2,3.0],[8.3,2.8],[4.4,4.9]].map(([x,y])=>({x,y,c:"r",g:0})), worte:"Lege 7 Punkte durcheinander. Danach: Lege sie so, dass man sie schnell sieht.", selbst:true, ungeordnet:true, quelle:"Zahlenbuch 1, S. 17: gut / nicht so gut zu sehen"}
+  ],
+  zehnerfeld:[
+    {n:3, rows:["rrr..","....."], worte:"Oben 3.", selbst:true},
+    {n:5, rows:["rrrrr","....."], worte:"Oben ein voller Fünfer.", selbst:true},
+    {n:6, rows:["rrrrr","r...."], worte:"Oben 5, unten 1.", selbst:true},
+    {n:7, rows:["rrrrr","rr..."], worte:"Oben 5, unten 2.", selbst:true},
+    {n:8, rows:["rrrrr","rrr.."], worte:"Oben 5, unten 3.", selbst:true},
+    {n:9, rows:["rrrrr","rrrr."], worte:"Oben 5, unten 4. Einer fehlt bis zur 10.", selbst:true},
+    {n:10, rows:["rrrrr","rrrrr"], worte:"Oben 5, unten 5.", selbst:true},
+    {n:4, rows:["rr...","rr..."], worte:"Oben 2, unten 2.", selbst:true},
+    {n:6, rows:["rrr..","bbb.."], worte:"Oben 3 rote, unten 3 blaue.", selbst:true},
+    {n:8, rows:["rrrr.","bbbb."], worte:"Oben 4 rote, unten 4 blaue.", selbst:true}
+  ],
+  zehnerstreifen:[
+    {n:4, rows:["rrrr......"], worte:"4 Plättchen von links.", selbst:true},
+    {n:5, rows:["rrrrr....."], worte:"Ein Fünfer.", selbst:true},
+    {n:6, rows:["rrrrrr...."], worte:"Ein Fünfer und noch 1.", selbst:true},
+    {n:7, rows:["rrrrrrr..."], worte:"Ein Fünfer und noch 2.", selbst:true},
+    {n:9, rows:["rrrrrrrrr."], worte:"Einer fehlt bis zur 10.", selbst:true},
+    {n:8, rows:["rrrrrrrr.."], worte:"Ein Fünfer und noch 3.", selbst:true},
+    {n:3, rows:["rrr......."], worte:"3 Plättchen von links.", selbst:true},
+    {n:10, rows:["rrrrrrrrrr"], worte:"Der Streifen ist voll.", selbst:true}
+  ],
+  zwanzigerfeld:[
+    {n:7, rows:["rrrrrrr...",".........."], worte:"Oben ein Fünfer und noch 2.", selbst:true},
+    {n:10, rows:["rrrrrrrrrr",".........."], worte:"Oben ein voller Zehner.", selbst:true},
+    {n:12, rows:["rrrrrrrrrr","rr........"], worte:"Oben 10, unten 2.", selbst:true},
+    {n:15, rows:["rrrrrrrrrr","rrrrr....."], worte:"Oben 10, unten ein Fünfer.", selbst:true},
+    {n:13, rows:["rrrrrrrrrr","rrr......."], worte:"Oben 10, unten 3.", selbst:true},
+    {n:17, rows:["rrrrrrrrrr","rrrrrrr..."], worte:"Oben 10, unten ein Fünfer und noch 2.", selbst:true},
+    {n:19, rows:["rrrrrrrrrr","rrrrrrrrr."], worte:"Oben 10, unten 9. Einer fehlt bis zur 20.", selbst:true},
+    {n:20, rows:["rrrrrrrrrr","rrrrrrrrrr"], worte:"Das Feld ist voll.", selbst:true},
+    {n:11, rows:["rrrrrrrrrr","r........."], worte:"Oben 10, unten 1.", selbst:true},
+    {n:14, rows:["rrrrrrr...","bbbbbbb..."], worte:"Oben 7 rote, unten 7 blaue.", selbst:true, quelle:"Zahlenbuch 1, Blitzrechnen „Verdoppeln“"},
+    {n:16, rows:["rrrrrrrr..","bbbbbbbb.."], worte:"Oben 8 rote, unten 8 blaue.", selbst:true, quelle:"Zahlenbuch 1, Blitzrechnen „Verdoppeln“"},
+    {n:18, rows:["rrrrrrrrr.","bbbbbbbbb."], worte:"Oben 9 rote, unten 9 blaue.", selbst:true}
+  ],
+  hunderterfeld:[
+    {n:30, worte:"3 volle Zehner.", selbst:true},
+    {n:43, worte:"4 volle Zehner und noch 3.", selbst:true, quelle:"Zahlenbuch 2, S. 28: „4 Zehner und 3 Einer“"},
+    {n:25, worte:"2 volle Zehner und ein Fünfer.", selbst:true},
+    {n:50, worte:"Die obere Hälfte ist voll.", selbst:true},
+    {n:37, worte:"3 volle Zehner, dann ein Fünfer und noch 2.", selbst:true, quelle:"Zahlenbuch 2, S. 28: „3 Zehner und 7 Einer“"},
+    {n:75, worte:"7 volle Zehner und ein Fünfer.", selbst:true},
+    {n:11, worte:"Einer mehr als ein voller Zehner.", selbst:true, quelle:"Mahiko Blitzblick ZR 100 (Formulierung angelehnt)"},
+    {n:51, worte:"Einer mehr als 5 volle Zehner.", selbst:true, quelle:"Mahiko Blitzblick ZR 100 (Formulierung angelehnt)"},
+    {n:79, worte:"Einer weniger als 8 volle Zehner.", selbst:true, quelle:"Mahiko Blitzblick ZR 100 (Formulierung angelehnt)"},
+    {n:97, worte:"9 volle Zehner, ein Fünfer und noch 2. Das sind 3 weniger als 100.", selbst:true, quelle:"Mahiko Blitzblick ZR 100 (Formulierung angelehnt)"},
+    {n:19, worte:"Einer weniger als 2 volle Zehner.", selbst:true, quelle:"Mahiko Blitzblick ZR 100 (19 = 20 − 1)"},
+    {n:44, worte:"4 volle Zehner, dann einer weniger als ein Fünfer.", selbst:true, quelle:"Mahiko Blitzblick ZR 100 (44 = 45 − 1)"}
+  ]
+};
+CARDS.hunderterfeld.forEach(c=>c.rows=hundert(c.n));
+
+/* Satzanfänge (Wortspeicher) – angelehnt an Mahiko-Wortspeicher, z. T. selbst formuliert */
+const WORTSPEICHER = {
+  sehen:["Ich sehe … und …","Oben …, unten …","Ein Fünfer und noch …","Ein voller Zehner und …","… fehlt bis zur …","Ich sehe auf einen Blick, dass …"],
+  erfinden:["Man sieht schnell, wie viele es sind, weil …","Ich habe … und … gelegt.","Ich habe einen Fünfer gelegt und …"]
+};
+
+/* ---------- Zustand ---------- */
+const $ = id=>document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const S = {
+  set:"zehnerfeld", idx:0, stufe:1,
+  phase:"bereit", num:"", placed:null, loops:[], color:"r",
+  shows:0, helps:{}, log:[], t0:0, undo:[], peek:false, lines:false, longer:false,
+  checks:0, lastCheck:null, done:{}, attempts:[], replay:null, kcur:null
+};
+const OPT = {check:true, legen:false, mono:false, snap:true, dur2:3, dur3:1, dur4:0.7, theme:"auto"};
+let noCheckHash = false;
+const LSKEY = "blitzblick.einstellungen";
+function loadOpt(){ try{ const o=JSON.parse(localStorage.getItem(LSKEY)||"{}"); Object.assign(OPT,o); }catch(e){} }
+function saveOpt(){ try{ localStorage.setItem(LSKEY, JSON.stringify(OPT)); }catch(e){} }
+
+const set = ()=>SETS[S.set];
+const card = ()=>CARDS[S.set][S.idx];
+const isGrid = ()=>set().kind==="grid";
+const flashStage = ()=>S.stufe>=2 && S.stufe<=4;
+const layingNow = ()=> S.stufe===5 || S.stufe===6 || (flashStage() && OPT.legen && S.phase==="verdeckt");
+const canCheck = ()=> OPT.check && !noCheckHash;
+
+/* ---------- Geometrie ---------- */
+function gridPos(r,c){ const g=set(); return {x:c+(g.gc&&c>=g.gc?GAP:0)+.5, y:r+(g.gr&&r>=g.gr?GAP:0)+.5}; }
+function gridSize(){ const g=set(); return {w:g.cols+(g.gc?GAP:0), h:g.rows+(g.gr?GAP:0)}; }
+const DIE=3.2, DIEGAP=1.2, PIP=[.7,1.6,2.5];
+const PIPS={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[2,0],[0,2],[2,2]],5:[[0,0],[2,0],[1,1],[0,2],[2,2]],6:[[0,0],[0,1],[0,2],[2,0],[2,1],[2,2]]};
+function diceCount(){ return S.stufe===6? 2 : (card().dice||[1]).length; }
+function diceDots(dice){ const out=[]; dice.forEach((v,i)=>{ const ox=i*(DIE+DIEGAP); PIPS[v].forEach(([a,b])=>out.push({x:ox+PIP[a], y:PIP[b], c:"r", g:i})); }); return out; }
+function boxSize(){
+  const k=set().kind;
+  if(k==="grid") return gridSize();
+  if(k==="dice"){ const n=diceCount(); return {w:n*DIE+(n-1)*DIEGAP, h:DIE}; }
+  return {w:10, h:6};
+}
+/* Bildpunkte der Karte: [{x,y,c,key?}] */
+function cardDots(cd){
+  cd = cd||card();
+  const k=set().kind;
+  if(k==="grid"){ const out=[]; cd.rows.forEach((row,r)=>[...row].forEach((ch,c)=>{ if(ch!=="."){ const p=gridPos(r,c); out.push({x:p.x,y:p.y,c:ch,key:r+","+c}); } })); return out; }
+  if(k==="dice") return diceDots(cd.dice);
+  return cd.dots.map(d=>({...d}));
+}
+function placedDots(pl){
+  pl = pl===undefined?S.placed:pl;
+  if(!pl) return [];
+  if(isGrid()) return Object.entries(pl).map(([key,c])=>{ const [r,cc]=key.split(",").map(Number); const p=gridPos(r,cc); return {x:p.x,y:p.y,c,key}; });
+  return pl.map(d=>({...d}));
+}
+function placedCount(){ return S.placed? (isGrid()?Object.keys(S.placed).length:S.placed.length) : 0; }
+
+/* ---------- Protokoll ---------- */
+function fmtT(ms){ const s=Math.floor(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function snap(){ return {num:S.num, placed:clone(S.placed), loops:clone(S.loops), phase:S.phase, peek:S.peek, lines:S.lines}; }
+function clone(o){ return o==null?o:JSON.parse(JSON.stringify(o)); }
+function log(txt, data){
+  const e={t:Date.now()-S.t0, txt, snap:snap()}; if(data) e.data=data;
+  S.log.push(e); renderLog();
+}
+function renderLog(){
+  const ol=$("log"); ol.innerHTML="";
+  S.log.forEach((e,i)=>{ const li=document.createElement("li"); if(S.replay && S.replay.i===i) li.className="cur";
+    li.innerHTML=`<span class="tm">${fmtT(e.t)}</span><span></span>`; li.lastChild.textContent=e.txt; ol.appendChild(li); });
+  ol.scrollTop=ol.scrollHeight;
+}
+function pushUndo(){ S.undo.push({num:S.num, placed:clone(S.placed), loops:clone(S.loops)}); if(S.undo.length>200) S.undo.shift(); }
+
+/* Versuch abschließen (für Export) */
+function closeAttempt(){ const r=attemptRecord(); if(r) S.attempts.push(r); }
+function attemptRecord(){
+  if(!S.log.length || S.log.length<2) return null;
+  const cd=card();
+  const helps=Object.entries(S.helps).map(([k,v])=>k+(v>1?" ×"+v:"")).join("; ");
+  const lastLoops = S.loops.map(l=>l.inside).filter(x=>x>0);
+  return ({
+    zeitpunkt:new Date(S.t0).toISOString(), darstellung:set().name, karte:S.idx+1, anzahl:cd.n, stufe:S.stufe,
+    zeigedauer_s: flashStage()? curDur():"", gezeigt:S.shows, antwort_zahl:S.num, gelegt: (S.stufe>=5 || (flashStage()&&OPT.legen))? placedCount():"",
+    pruefungen:S.checks, letztes_ergebnis:S.lastCheck||"", hilfen:helps, eingekreist: lastLoops.join(" + "),
+    dauer_s: Math.round((S.log[S.log.length-1].t)/100)/10, schritte:S.log.map(e=>({t_ms:e.t, schritt:e.txt, daten:e.data||null}))
+  });
+}
+
+/* ---------- Aufgabe starten ---------- */
+function start(keepLog){
+  if(!keepLog) closeAttempt();
+  stopReplay(true);
+  clearTimeout(S._timer); clearTimeout(S._peek);
+  S.phase = flashStage()? "bereit" : (S.stufe===1? "offen":"legen");
+  S.num=""; S.loops=[]; S.undo=[]; S.shows=0; S.helps={}; S.peek=false; S.lines=false; S.longer=false; S.checks=0; S.lastCheck=null; S.kcur=null;
+  S.placed = isGrid()? {} : [];
+  S.t0=Date.now(); S.log=[]; S.testPhase=null;
+  $("timer").hidden=true; hideFeedback();
+  log(`Karte ${S.idx+1} (${set().name}), Stufe ${S.stufe} begonnen`);
+  renderAll();
+}
+
+/* ---------- Rendering ---------- */
+function el(tag, attrs, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+
+function renderAll(){ renderPanel(); renderCard(); renderBar(); renderBoard(); renderCover(); }
+
+function renderPanel(){
+  // Stufen
+  const st=$("stufen"); st.innerHTML="";
+  STUFEN.forEach(s=>{ const b=document.createElement("button"); b.innerHTML=`<b>${s.n}</b> ${s.kurz}`; b.setAttribute("aria-pressed", S.stufe===s.n);
+    b.onclick=()=>{ if(S.stufe!==s.n){ S.stufe=s.n; start(); } }; st.appendChild(b); });
+  $("modeHint").textContent = STUFEN[S.stufe-1].hint;
+  // Darstellungen
+  const ss=$("sets"); ss.innerHTML="";
+  Object.entries(SETS).forEach(([key,s])=>{ const b=document.createElement("button"); b.className="setbtn"; b.setAttribute("aria-pressed", S.set===key);
+    b.innerHTML=setIcon(key)+`<span><span class="sn">${s.name}</span><span class="sk">${s.kl} · ${CARDS[key].length} Karten</span></span>`;
+    b.onclick=()=>{ if(S.set!==key){ closeAttempt(); S.set=key; S.idx=0; start(true); } }; ss.appendChild(b); });
+  // Karten
+  const cs=$("cards"); cs.innerHTML="";
+  CARDS[S.set].forEach((c,i)=>{ const b=document.createElement("button"); b.className="cardbtn"+(S.done[S.set+":"+i+":"+S.stufe]?" done":""); b.textContent=i+1;
+    b.setAttribute("aria-label","Karte "+(i+1)); b.setAttribute("aria-pressed", S.idx===i);
+    b.onclick=()=>{ if(S.idx!==i){ closeAttempt(); S.idx=i; start(true); } }; cs.appendChild(b); });
+  renderHelps();
+}
+function setIcon(key){
+  const s=SETS[key]; let inner="";
+  if(key==="wuerfel") inner=`<rect x="4" y="3" width="24" height="24" rx="4" fill="var(--paper)" stroke="var(--cell-line)"/>`+[[9,8],[23,8],[16,15],[9,22],[23,22]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="var(--red)"/>`).join("");
+  else if(key==="punkte") inner=[[6,8],[13,8],[6,15],[13,15],[26,8],[33,15],[19,15]].slice(0,7).map(([x,y],i)=>`<circle cx="${x+(i>3?6:0)}" cy="${y+3}" r="2.8" fill="var(--red)"/>`).join("");
+  else { const cols=s.cols===5?5:10, rows=key==="hunderterfeld"?4:s.rows, cw=key==="zehnerfeld"?8:4.2, fill=key==="zehnerfeld"?7:key==="zehnerstreifen"?7:key==="zwanzigerfeld"?13:34;
+    let k=0; for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){ const x=3+c*cw+(s.gc&&c>=5?2:0), y=4+r*(rows>2?5.6:cw)+(rows===1?8:0); inner+=`<circle cx="${x+cw/2}" cy="${y+cw/2}" r="${Math.min(cw,5.6)/2.6}" fill="${k<fill?"var(--red)":"none"}" stroke="${k<fill?"none":"var(--cell-line)"}"/>`; k++; } }
+  return `<svg viewBox="0 0 46 30" aria-hidden="true">${inner}</svg>`;
+}
+
+function renderHelps(){
+  const h=$("helps"); h.innerHTML="";
+  const add=(id,label,fn,enabled=true)=>{ const b=document.createElement("button"); b.className="btn small"; b.id=id; b.disabled=!enabled;
+    const n=S.helps[label]; b.innerHTML=label+(n?` <span class="cnt">${n}</span>`:""); b.onclick=()=>{ useHelp(label); fn(); }; h.appendChild(b); };
+  const blank = S.phase==="bereit";
+  if(flashStage()){
+    add("hAgain","Noch einmal zeigen",()=>flash(curDur()), !blank && S.phase!=="zeigen" && S.phase!=="offen");
+    add("hLong","Länger zeigen",()=>flash(curDur()*2), !blank && S.phase!=="zeigen" && S.phase!=="offen");
+    if(S.stufe===4) add("hLines","Mit Linien zeigen",()=>{ S.lines=true; flash(curDur()); }, !blank && S.phase!=="zeigen" && S.phase!=="offen");
+  }
+  if(S.stufe===5){
+    add("hPeek","Bild 3 Sekunden zeigen",()=>peek(3000), !S.peek);
+    add("hPart",isGrid()?"Eine Reihe vorlegen":"Eine Gruppe vorlegen",placePart, true);
+  }
+  add("hWort","Satzanfänge",toggleWort, true);
+  renderWort();
+}
+function useHelp(label){ S.helps[label]=(S.helps[label]||0)+1; log("Hilfe: "+label); }
+function toggleWort(){ S.wortOpen=!S.wortOpen; renderWort(); }
+function renderWort(){
+  const w=$("wortspeicher"); w.hidden=!S.wortOpen; if(!S.wortOpen) return;
+  const list = S.stufe===6?WORTSPEICHER.erfinden:WORTSPEICHER.sehen;
+  w.innerHTML=list.map(t=>`<p>${t}</p>`).join("");
+}
+
+function auftrag(){
+  const cd=card(), n=cd.n;
+  switch(S.stufe){
+    case 1: return "Schau genau hin. Wie viele sind es? Kreise ein, wie du sie siehst.";
+    case 2: case 3: case 4:
+      if(S.phase==="bereit") return S.stufe===2? `Tippe auf „Zeigen“. Du siehst das Bild ${fmtS(curDur())} lang. Wie viele sind es?`
+        : S.stufe===3? "Tippe auf „Zeigen“. Das Bild blitzt nur kurz auf. Wie viele sind es?"
+        : "Tippe auf „Zeigen“. Jetzt ganz kurz und ohne Linien. Wie viele sind es?";
+      if(S.phase==="zeigen") return "Schau genau hin!";
+      if(S.phase==="verdeckt") return OPT.legen? "Lege nach, was du gesehen hast." : "Wie viele hast du gesehen? Tippe die Zahl. Wie hast du sie gesehen?";
+      return "Kreise ein, wie du die Zahl gesehen hast.";
+    case 5: return `<span class="worte">„${cd.worte}“</span>`+(/^Lege/.test(cd.worte)?"":"<br>Lege so, wie es hier steht.");
+    case 6: return `Lege eine Zahl so, dass man schnell sieht, wie viele es sind. Tippe deine Zahl dazu. Zum Beispiel die ${n}.`;
+  }
+}
+function fmtS(s){ return String(Math.round(s*10)/10).replace(".",",")+" Sekunden"; }
+function renderCard(){
+  $("cardK").textContent = `${set().name} · Karte ${S.idx+1} von ${CARDS[S.set].length} · Stufe ${S.stufe}`;
+  $("cardBody").innerHTML = "<p>"+auftrag()+"</p>";
+}
+
+function renderBar(){
+  const lay=layingNow();
+  const needNum = S.stufe===1 || S.stufe===6 || (flashStage() && !OPT.legen);
+  $("numWrap").hidden = !needNum; $("pad").hidden = !needNum || (flashStage() && (S.phase==="bereit"||S.phase==="zeigen"));
+  $("numLbl").textContent = S.stufe===6? "Meine Zahl":"Deine Zahl";
+  const nb=$("numbox"); nb.textContent = S.num||"–"; nb.classList.toggle("empty", !S.num);
+  $("colors").hidden = !lay;
+  $("colors").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.c===S.color));
+  $("btnShow").hidden = !(flashStage() && S.phase==="bereit");
+  $("btnOpen").hidden = !(flashStage() && S.phase==="verdeckt");
+  $("btnTest").hidden = S.stufe!==6;
+  $("btnCheck").hidden = !canCheck() || (flashStage() && (S.phase==="bereit"||S.phase==="zeigen"));
+  document.body.classList.toggle("mono", OPT.mono);
+  $("pShow").disabled = !(flashStage() && S.phase!=="zeigen");
+  $("pShow").textContent = S.phase==="bereit"?"Zeigen":"Noch einmal";
+  $("pOpen").disabled = !(flashStage() && S.phase==="verdeckt");
+}
+function buildPad(){
+  const p=$("pad"); p.innerHTML="";
+  [1,2,3,4,5,6,7,8,9,0].forEach(d=>{ const b=document.createElement("button"); b.textContent=d; b.onclick=()=>typeDigit(String(d)); p.appendChild(b); });
+  const bk=document.createElement("button"); bk.textContent="⌫"; bk.setAttribute("aria-label","Ziffer löschen"); bk.onclick=backspace; p.appendChild(bk);
+}
+function typeDigit(d){ if(S.num.length>=3 || !numAllowed()) return; pushUndo(); S.num=(S.num==="0"?"":S.num)+d; hideFeedback(); log("Zahl: "+S.num); renderBar(); }
+function backspace(){ if(!S.num || !numAllowed()) return; pushUndo(); S.num=S.num.slice(0,-1); log("Ziffer gelöscht"+(S.num?" → "+S.num:"")); renderBar(); }
+function numAllowed(){ return !$("numWrap").hidden && !$("pad").hidden && !S.replay; }
+
+/* ---------- Brett zeichnen ---------- */
+function renderBoard(view){
+  view = view || {num:S.num, placed:S.placed, loops:S.loops, phase:S.phase, peek:S.peek, lines:S.lines};
+  const svg=$("board"); svg.innerHTML="";
+  const {w,h}=boxSize(); const pad=.7;
+  svg.setAttribute("viewBox", `${-pad} ${-pad} ${w+2*pad} ${h+2*pad}`);
+  const kind=set().kind;
+  const showImg = S.stufe===1 || view.peek || (flashStage() && (view.phase==="zeigen"||view.phase==="offen") );
+  const lay = !showImg && (S.stufe===5 || S.stufe===6 || (flashStage() && OPT.legen && view.phase==="verdeckt"));
+  const linesOn = !(S.stufe===4 && view.phase==="zeigen" && !view.lines);
+  const strong = S.stufe===1;
+  const g=el("g",{},svg);
+  // Rahmen
+  if(kind==="grid"){
+    const gs=set();
+    if(linesOn){
+      el("rect",{x:-.15,y:-.15,width:w+.3,height:h+.3,rx:.25,class:"frame"},g);
+      for(let r=0;r<gs.rows;r++) for(let c=0;c<gs.cols;c++){ const p=gridPos(r,c); el("rect",{x:p.x-.5,y:p.y-.5,width:1,height:1,class:"cellbox"},g); }
+      if(gs.gc){ const x=gs.gc+GAP/2; el("line",{x1:x,y1:-.15,x2:x,y2:h+.15,class:"five"+(strong?" strong":"")},g); }
+      if(gs.gr){ const y=gs.gr+GAP/2; el("line",{x1:-.15,y1:y,x2:w+.15,y2:y,class:"five"+(strong?" strong":"")},g); }
+      if(S.set==="zehnerfeld"){ el("line",{x1:-.15,y1:1,x2:w+.15,y2:1,class:"five"+(strong?" strong":"")},g); }
+    }
+    if(lay && linesOn){ for(let r=0;r<gs.rows;r++) for(let c=0;c<gs.cols;c++){ const p=gridPos(r,c); el("circle",{cx:p.x,cy:p.y,r:.36,class:"emptydot"},g); } }
+  } else if(kind==="dice"){
+    if(linesOn || lay){ for(let i=0;i<diceCount();i++) el("rect",{x:i*(DIE+DIEGAP),y:0,width:DIE,height:DIE,rx:.45,class:"die"},g); }
+  } else {
+    if(lay || S.stufe===1 || (linesOn && showImg)) el("rect",{x:-.2,y:-.2,width:w+.4,height:h+.4,rx:.35,class:"frame"},g);
+  }
+  // Punkte
+  const r = kind==="dice"?.34:.38;
+  if(showImg){
+    cardDots().forEach(d=>el("circle",{cx:d.x,cy:d.y,r,class:"dot "+d.c},g));
+    if(set().winkel && !(S.stufe===4 && !view.lines && view.phase==="zeigen")) drawWinkel(g);
+  } else if(lay){
+    placedDots(view.placed).forEach(d=>el("circle",{cx:d.x,cy:d.y,r,class:"dot "+d.c},g));
+    if(S.marks){ S.marks.miss.forEach(p=>el("circle",{cx:p.x,cy:p.y,r:.42,class:"miss"},g)); S.marks.over.forEach(p=>el("circle",{cx:p.x,cy:p.y,r:.46,class:"overm"},g)); }
+    if(S.kcur && isGrid()){ const p=gridPos(S.kcur.r,S.kcur.c); el("rect",{x:p.x-.48,y:p.y-.48,width:.96,height:.96,rx:.12,class:"kcur"},g); }
+  }
+  // Kreise
+  if(showImg && (S.stufe===1 || view.phase==="offen")){
+    (view.loops||[]).forEach(l=>drawLoop(g,l));
+  }
+  S._g=g;
+}
+function drawWinkel(g){
+  // Abdeckwinkel: verdeckt alles ab dem ersten leeren Feld (rechts in der Teilzeile + alle Zeilen darunter)
+  const n=card().n, full=Math.floor(n/10), rest=n%10, {w,h}=gridSize();
+  if(n>=100) return;
+  const pts=[];
+  const yTop = full + (full>=5?GAP:0); // Oberkante der ersten nicht vollen Zeile
+  const yNext = (full+1) + (full+1>5?GAP:0) + (full+1===5?0:0);
+  const xRest = rest + (rest>=5?GAP:0);
+  const e=.12;
+  if(rest===0){ pts.push([-e,yTop-.02],[w+e,yTop-.02],[w+e,h+e],[-e,h+e]); }
+  else { const yN = gridPos(full+1,0).y-.5; pts.push([xRest-.02,yTop-.02],[w+e,yTop-.02],[w+e,h+e],[-e,h+e],[-e,(full+1<10?yN:h)-.02],[xRest-.02,(full+1<10?yN:h)-.02]); }
+  el("polygon",{points:pts.map(p=>p.join(",")).join(" "),class:"winkel"},g);
+}
+function drawLoop(g,l){
+  if(!l.pts.length) return;
+  el("path",{d:"M"+l.pts.map(p=>p[0].toFixed(2)+","+p[1].toFixed(2)).join("L")+(l.closed?"Z":""),class:"loop"},g);
+}
+
+function renderCover(){
+  const cov=$("cover");
+  const show = flashStage() && (S.phase==="bereit" || (S.phase==="verdeckt" && !OPT.legen)) && !S.peek && !S.replay;
+  const test = S.testPhase;
+  cov.hidden = !(show || test==="warte" || test==="verdeckt");
+  if(test==="warte"){ $("coverQ").textContent="…"; $("coverT").textContent="Gleich kommt dein Bild."; $("coverBtn").hidden=true; return; }
+  if(test==="verdeckt"){ $("coverQ").textContent="?"; $("coverT").textContent="Wie viele waren es? Sieht man es schnell? Tippe, um wieder zu legen."; $("coverBtn").hidden=true; return; }
+  if(S.phase==="bereit"){ $("coverQ").textContent="?"; $("coverT").textContent="Bereit?"; $("coverBtn").hidden=false; $("coverBtn").textContent="Zeigen"; }
+  else { $("coverQ").textContent="?"; $("coverT").textContent="Wie viele hast du gesehen?"; $("coverBtn").hidden=true; }
+}
+
+/* ---------- Zeigen / Blitz ---------- */
+function curDur(){ return S.stufe===2?OPT.dur2:S.stufe===3?OPT.dur3:OPT.dur4; }
+function flash(sec){
+  if(!flashStage()) return;
+  clearTimeout(S._timer); hideFeedback();
+  S.phase="zeigen"; S.shows++;
+  log(`Bild gezeigt (${String(Math.round(sec*10)/10).replace(".",",")} s${S.lines?", mit Linien":""})`);
+  runTimer(sec);
+  renderAll();
+  S._timer=setTimeout(()=>{ S.phase="verdeckt"; S.lines=false; $("timer").hidden=true; renderAll(); }, sec*1000);
+}
+function runTimer(sec){
+  const t=$("timer"), b=$("timerBar"); t.hidden=false;
+  b.style.transition="none"; b.style.transform="scaleX(1)"; void b.offsetWidth;
+  b.style.transition=`transform ${sec}s linear`; b.style.transform="scaleX(0)";
+}
+function reveal(){
+  if(!(flashStage() && S.phase==="verdeckt")) return;
+  S.phase="offen"; log("Aufgedeckt"); renderAll();
+}
+function peek(ms){
+  S.peek=true; renderAll(); runTimer(ms/1000);
+  clearTimeout(S._peek); S._peek=setTimeout(()=>{ S.peek=false; $("timer").hidden=true; renderAll(); }, ms);
+}
+function placePart(){
+  const cd=card();
+  // Hilfe nimmt nie die ganze Aufgabe ab: die letzte fehlende Reihe/Gruppe legt das Kind selbst
+  const open = isGrid()? cd.rows.filter((row,ri)=>[...row].some((ch,ci)=>ch!=="." && !S.placed[ri+","+ci])).length
+                       : new Set(cardDots().map(d=>d.g).filter(gi=>!S.placed.some(p=>p.g===gi && p.fromHelp))).size;
+  if(open<=1){ const k=isGrid()?"Eine Reihe vorlegen":"Eine Gruppe vorlegen"; if(S.helps[k]){ S.helps[k]--; if(!S.helps[k]) delete S.helps[k]; } S.log.pop(); renderLog(); renderHelps(); showFeedback(false,"Den Rest legst du selbst."); return; }
+  pushUndo();
+  if(isGrid()){ const r = cd.rows.findIndex((row,ri)=>[...row].some((ch,ci)=>ch!=="." && !S.placed[ri+","+ci]));
+    if(r<0) return; [...cd.rows[r]].forEach((ch,ci)=>{ if(ch!==".") S.placed[r+","+ci]=ch; }); log(`Reihe ${r+1} vorgelegt`); }
+  else { const dots=cardDots(); const gi=[...new Set(dots.map(d=>d.g))].find(gi=>!S.placed.some(p=>p.g===gi && p.fromHelp));
+    if(gi===undefined) return; dots.filter(d=>d.g===gi).forEach(d=>S.placed.push({x:d.x,y:d.y,c:d.c,g:gi,fromHelp:true})); log("Gruppe vorgelegt"); }
+  renderAll();
+}
+/* Stufe 6: eigenes Bild blitzen */
+function testFlash(){
+  if(!placedCount()){ showFeedback(false,"Lege zuerst Plättchen."); return; }
+  S.testPhase="warte"; log("Eigenes Bild geblitzt"); renderCover();
+  setTimeout(()=>{ S.testPhase="zeigen"; $("cover").hidden=true; runTimer(1); renderBoard();
+    setTimeout(()=>{ S.testPhase="verdeckt"; $("timer").hidden=true; renderCover(); }, 1000); }, 900);
+}
+
+/* ---------- Prüfen ---------- */
+function check(){
+  if(!canCheck()) return;
+  S.checks++; S.marks=null;
+  const n=card().n;
+  if(S.stufe===5 || (flashStage() && OPT.legen)){
+    const k=placedCount();
+    if(k===n){
+      let same=true; if(isGrid()){ const tk=new Set(cardDots().map(d=>d.key)); same = Object.keys(S.placed).every(key=>tk.has(key)); }
+      else same=null;
+      S.lastCheck="passt"; log("Prüfen: passt"+(same===false?" (anders gelegt)":""));
+      markDone();
+      showFeedback(true, "Passt!", same===false?"Du hast anders gelegt. Das ist auch richtig, wenn es dieselbe Anzahl ist.":"");
+    } else {
+      S.lastCheck="passt noch nicht"; log(`Prüfen: passt noch nicht (${k} statt ${n})`);
+      showFeedback(false, "Passt noch nicht.", null, ()=>{
+        const det = k>n? `Es sind ${k-n} ${k-n===1?"Plättchen":"Plättchen"} zu viel.` : `Es ${n-k===1?"fehlt 1 Plättchen":"fehlen "+(n-k)+" Plättchen"}.`;
+        if(isGrid()){ const tk=new Set(cardDots().map(d=>d.key)); const pk=new Set(Object.keys(S.placed));
+          S.marks={miss:cardDots().filter(d=>!pk.has(d.key)), over:placedDots().filter(d=>!tk.has(d.key))}; renderBoard();
+          return det; }
+        return det;
+      }, isGrid());
+    }
+    return;
+  }
+  if(S.stufe===6){
+    const k=placedCount();
+    if(!S.num){ showFeedback(false,"Tippe auch deine Zahl."); log("Prüfen: Zahl fehlt"); return; }
+    const z=Number(S.num);
+    if(k===z){ S.lastCheck="passt"; markDone(); log("Prüfen: passt"); showFeedback(true,"Passt!","Teste mit „Blitz testen“: Sieht man schnell, wie viele es sind? Warum?"); }
+    else { S.lastCheck="passt noch nicht"; log(`Prüfen: passt noch nicht (gelegt ${k}, Zahl ${z})`);
+      showFeedback(false,"Passt noch nicht.",null,()=> k>z?`Es ${k-z===1?"liegt 1 Plättchen":"liegen "+(k-z)+" Plättchen"} mehr als deine Zahl.`:`Es ${z-k===1?"fehlt 1 Plättchen":"fehlen "+(z-k)+" Plättchen"} bis zu deiner Zahl.`); }
+    return;
+  }
+  // Zahl prüfen
+  if(!S.num){ showFeedback(false,"Tippe zuerst eine Zahl."); log("Prüfen: keine Zahl"); return; }
+  const z=Number(S.num);
+  if(z===n){ S.lastCheck="passt"+(S.phase==="offen"?" (nach Aufdecken)":""); markDone(); log("Prüfen: passt"+(S.phase==="offen"?" (nach Aufdecken)":""));
+    showFeedback(true,"Passt!", flashStage()&&S.phase==="verdeckt"?"Decke auf und kreise ein, wie du es gesehen hast.":"Wie hast du es gesehen? Kreise ein."); }
+  else { S.lastCheck="passt noch nicht"; log(`Prüfen: passt noch nicht (${z})`);
+    showFeedback(false,"Passt noch nicht.",null,()=> z>n?"Deine Zahl ist zu groß.":"Deine Zahl ist zu klein."); }
+}
+function markDone(){ S.done[S.set+":"+S.idx+":"+S.stufe]=true; renderPanel(); }
+function showFeedback(ok, title, det, detFn, legend){
+  const f=$("feedback"); f.hidden=false; f.className="feedback"+(ok?" ok":"");
+  f.innerHTML=""; const t=document.createElement("span"); t.textContent=title; f.appendChild(t);
+  if(detFn){ const b=document.createElement("button"); b.className="btn small"; b.textContent="Wo hakt es?";
+    b.onclick=()=>{ log("Hilfe beim Prüfen: Wo hakt es?"); const d=document.createElement("div"); d.className="det"; d.textContent=detFn(); b.replaceWith(d);
+      if(legend){ const lg=document.createElement("div"); lg.className="legend";
+        lg.innerHTML=`<span><svg width="16" height="16" viewBox="-1 -1 2 2"><circle r=".8" class="miss" style="stroke-width:.2"/></svg>Hier lag auf der Karte ein Plättchen</span><span><svg width="16" height="16" viewBox="-1 -1 2 2"><circle r=".8" class="overm" style="stroke-width:.2"/></svg>Hier lag keins</span>`; f.appendChild(lg); } };
+    f.appendChild(b); }
+  if(det){ const d=document.createElement("div"); d.className="det"; d.textContent=det; f.appendChild(d); }
+  const x=document.createElement("button"); x.className="btn small"; x.textContent="✕"; x.setAttribute("aria-label","Schließen"); x.onclick=hideFeedback; f.appendChild(x);
+}
+function hideFeedback(){ $("feedback").hidden=true; if(S.marks){ S.marks=null; renderBoard(); } }
+
+/* ---------- Zeiger: Legen und Einkreisen ---------- */
+const board=$("board");
+function svgPt(ev){ const p=board.createSVGPoint(); p.x=ev.clientX; p.y=ev.clientY; const m=S._g.getScreenCTM(); return m? p.matrixTransform(m.inverse()) : {x:0,y:0}; }
+function cellAt(pt){ const g=set(); for(let r=0;r<g.rows;r++) for(let c=0;c<g.cols;c++){ const p=gridPos(r,c); if(Math.abs(pt.x-p.x)<=.5 && Math.abs(pt.y-p.y)<=.5) return {r,c}; } return null; }
+const drawAllowed = ()=> S.stufe===1 || (flashStage() && S.phase==="offen");
+let drag=null;
+board.addEventListener("pointerdown", ev=>{
+  if(S.replay || S.testPhase) return;
+  const pt=svgPt(ev);
+  if(layingNow() && !S.peek){
+    board.setPointerCapture(ev.pointerId); hideFeedback();
+    if(isGrid()){ const c=cellAt(pt); if(!c) return; pushUndo(); const key=c.r+","+c.c; const mode=S.placed[key]?"clear":"fill";
+      drag={type:"paint", mode, n:0, seen:new Set()}; paintCell(key); renderBoard(); }
+    else {
+      const {w,h}=boxSize(); const hit=S.placed.findIndex(d=>Math.hypot(d.x-pt.x,d.y-pt.y)<.5);
+      if(hit<0 && (pt.x<-.4||pt.y<-.4||pt.x>w+.4||pt.y>h+.4)) return;
+      pushUndo();
+      drag={type:"free", hit, start:pt, moved:false};
+    }
+    return;
+  }
+  if(drawAllowed()){ board.setPointerCapture(ev.pointerId); drag={type:"loop", pts:[[pt.x,pt.y]]}; }
+});
+board.addEventListener("pointermove", ev=>{
+  if(!drag) return; const pt=svgPt(ev);
+  if(drag.type==="paint"){ const c=cellAt(pt); if(c){ paintCell(c.r+","+c.c); renderBoard(); } }
+  else if(drag.type==="free"){ if(Math.hypot(pt.x-drag.start.x,pt.y-drag.start.y)>.25) drag.moved=true;
+    if(drag.moved && drag.hit>=0){ const d=S.placed[drag.hit]; const s=snapPt(pt); d.x=s.x; d.y=s.y; renderBoard(); } }
+  else if(drag.type==="loop"){ const last=drag.pts[drag.pts.length-1]; if(Math.hypot(pt.x-last[0],pt.y-last[1])>.08){ drag.pts.push([pt.x,pt.y]);
+    const g=S._g; const tmp=g.querySelector(".tmploop")||el("path",{class:"loop tmploop"},g); tmp.setAttribute("d","M"+drag.pts.map(p=>p.join(",")).join("L")); } }
+});
+function endDrag(ev){
+  if(!drag) return; const d=drag; drag=null;
+  if(d.type==="paint"){ if(d.n) log(d.mode==="fill"?`${d.n} ${d.n===1?"Plättchen":"Plättchen"} gelegt`:`${d.n} ${d.n===1?"Plättchen":"Plättchen"} weggenommen`, {gelegt:placedCount()}); else S.undo.pop(); renderBar(); return; }
+  if(d.type==="free"){
+    if(d.hit>=0 && !d.moved){ S.placed.splice(d.hit,1); log("Plättchen weggenommen",{gelegt:placedCount()}); }
+    else if(d.hit>=0 && d.moved){ log("Plättchen verschoben"); }
+    else if(d.hit<0 && !d.moved){ const s=snapPt(d.start); if(S.placed.some(p=>Math.hypot(p.x-s.x,p.y-s.y)<.6)){ S.undo.pop(); return; }
+      S.placed.push({x:s.x,y:s.y,c:S.color}); log("Plättchen gelegt",{gelegt:placedCount()}); }
+    else S.undo.pop();
+    renderBoard(); return;
+  }
+  if(d.type==="loop"){
+    let len=0; for(let i=1;i<d.pts.length;i++) len+=Math.hypot(d.pts[i][0]-d.pts[i-1][0], d.pts[i][1]-d.pts[i-1][1]);
+    if(len<1.2){ renderBoard(); return; }
+    pushUndo(); const inside=cardDots().filter(p=>pip(p,d.pts)).length;
+    S.loops.push({pts:d.pts.map(p=>[+p[0].toFixed(2),+p[1].toFixed(2)]), closed:true, inside});
+    log(`Eingekreist: ${inside} ${inside===1?"Punkt":"Punkte"}`, {kreis:inside});
+    renderBoard();
+  }
+}
+board.addEventListener("pointerup", endDrag); board.addEventListener("pointercancel", endDrag);
+function paintCell(key){
+  if(drag.seen.has(key)) return; drag.seen.add(key);
+  if(drag.mode==="fill" && !S.placed[key]){ S.placed[key]=S.color; drag.n++; }
+  if(drag.mode==="clear" && S.placed[key]){ delete S.placed[key]; drag.n++; }
+}
+function snapPt(pt){
+  const {w,h}=boxSize(); let x=Math.max(.2,Math.min(w-.2,pt.x)), y=Math.max(.2,Math.min(h-.2,pt.y));
+  if(!OPT.snap) return {x,y};
+  if(set().kind==="dice"){ let best=null,bd=1e9; for(let i=0;i<diceCount();i++) for(const a of PIP) for(const b of PIP){ const px=i*(DIE+DIEGAP)+a, py=b, dd=Math.hypot(px-x,py-y); if(dd<bd){bd=dd;best={x:px,y:py};} } return best; }
+  return {x:Math.round(x*2)/2, y:Math.round(y*2)/2};
+}
+function pip(p, poly){ let c=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const [xi,yi]=poly[i],[xj,yj]=poly[j];
+  if(((yi>p.y)!==(yj>p.y)) && (p.x < (xj-xi)*(p.y-yi)/(yj-yi)+xi)) c=!c; } return c; }
+
+/* ---------- Rückgängig, Neu, Wiedergabe ---------- */
+function undo(){
+  if(!S.undo.length || S.replay) return; const u=S.undo.pop();
+  S.num=u.num; S.placed=u.placed; S.loops=u.loops; hideFeedback(); log("Rückgängig"); renderBar(); renderBoard();
+}
+function startReplay(){
+  if(S.log.length<2){ return; }
+  clearTimeout(S._timer); $("timer").hidden=true;
+  S.replay={i:0, playing:false}; $("replaybar").hidden=false; $("cover").hidden=true; hideFeedback();
+  const sl=$("rpSlider"); sl.max=S.log.length-1; sl.value=0; showReplay(0);
+}
+function showReplay(i){
+  S.replay.i=i; const e=S.log[i]; $("rpSlider").value=i; $("rpCount").textContent=`${i+1}/${S.log.length} · ${fmtT(e.t)}`; $("rpText").textContent=e.txt;
+  const v=e.snap; renderBoard({num:v.num, placed:v.placed, loops:v.loops, phase:v.phase==="verdeckt"&&!OPT.legen?"offen":v.phase, peek:v.peek, lines:v.lines});
+  const nb=$("numbox"); nb.textContent=v.num||"–"; nb.classList.toggle("empty",!v.num); renderLog();
+}
+function stopReplay(silent){ if(!S.replay) return; clearTimeout(S.replay.tm); S.replay=null; $("replaybar").hidden=true; if(!silent){ renderAll(); renderLog(); } }
+function playReplay(){
+  if(!S.replay) return; if(S.replay.playing){ S.replay.playing=false; clearTimeout(S.replay.tm); $("rpPlay").textContent="Abspielen"; return; }
+  S.replay.playing=true; $("rpPlay").textContent="Pause";
+  if(S.replay.i>=S.log.length-1) showReplay(0);
+  const step=()=>{ if(!S.replay||!S.replay.playing) return; const i=S.replay.i; if(i>=S.log.length-1){ S.replay.playing=false; $("rpPlay").textContent="Abspielen"; return; }
+    const dt=Math.min(1500, Math.max(350, S.log[i+1].t-S.log[i].t)); S.replay.tm=setTimeout(()=>{ if(!S.replay) return; showReplay(i+1); step(); }, dt); };
+  step();
+}
+
+/* ---------- Export ---------- */
+function download(name, text, type){
+  try{ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500); }catch(e){ alert("Speichern hat nicht geklappt."); }
+}
+function allAttempts(){ const cur=attemptRecord(); return cur? S.attempts.concat([cur]) : S.attempts.slice(); }
+function stamp(){ const d=new Date(); return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")+"-"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0"); }
+function exportCsv(){
+  const a=allAttempts(); if(!a.length){ alert("Noch keine Versuche im Protokoll."); return; }
+  const cols=["zeitpunkt","darstellung","karte","anzahl","stufe","zeigedauer_s","gezeigt","antwort_zahl","gelegt","pruefungen","letztes_ergebnis","hilfen","eingekreist","dauer_s"];
+  const esc=v=>{ v=v==null?"":String(v); return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  const lines=[cols.join(";")].concat(a.map(r=>cols.map(c=>esc(r[c])).join(";")));
+  download(`blitzblick-protokoll-${stamp()}.csv`, "﻿"+lines.join("\r\n"), "text/csv;charset=utf-8");
+}
+function exportJson(){
+  const a=allAttempts(); if(!a.length){ alert("Noch keine Versuche im Protokoll."); return; }
+  download(`blitzblick-protokoll-${stamp()}.json`, JSON.stringify({app:"Blitzblick-Werkstatt", version:"0.1", versuche:a}, null, 2), "application/json");
+}
+
+/* ---------- Präsentationsmodus ---------- */
+function setPraes(on){
+  document.body.classList.toggle("praes", on); $("praesctl").hidden=!on;
+  if(on && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(()=>{}); }
+  if(!on && document.fullscreenElement){ document.exitFullscreen().catch(()=>{}); }
+  renderAll(); setTimeout(renderBoard,60);
+}
+function step(d){ closeAttempt(); S.idx=(S.idx+d+CARDS[S.set].length)%CARDS[S.set].length; start(true); }
+
+/* ---------- Design ---------- */
+function applyTheme(){
+  const r=document.documentElement; if(OPT.theme==="auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme",OPT.theme);
+  $("btnTheme").textContent="Design: "+({auto:"Auto",light:"Hell",dark:"Dunkel"})[OPT.theme];
+}
+
+/* ---------- Ereignisse ---------- */
+function bind(){
+  buildPad();
+  $("btnShow").onclick=()=>flash(curDur()); $("coverBtn").onclick=e=>{ e.stopPropagation(); flash(curDur()); };
+  $("cover").onclick=()=>{ if(S.testPhase==="verdeckt"){ S.testPhase=null; renderAll(); } else if(S.phase==="bereit") flash(curDur()); };
+  $("btnOpen").onclick=reveal; $("btnCheck").onclick=check; $("btnNext").onclick=()=>step(1); $("btnTest").onclick=testFlash;
+  $("btnUndo").onclick=undo; $("btnReset").onclick=()=>start(); $("btnReplay").onclick=startReplay;
+  $("rpClose").onclick=()=>stopReplay(); $("rpPlay").onclick=playReplay; $("rpSlider").oninput=e=>{ if(S.replay){ S.replay.playing=false; $("rpPlay").textContent="Abspielen"; showReplay(+e.target.value);} };
+  $("btnCsv").onclick=exportCsv; $("btnJson").onclick=exportJson;
+  $("btnPraes").onclick=()=>setPraes(true); $("pExit").onclick=()=>setPraes(false);
+  $("pShow").onclick=()=>{ if(flashStage()&&S.phase!=="zeigen"){ if(S.phase!=="bereit") useHelp("Noch einmal zeigen"); flash(curDur()); } };
+  $("pOpen").onclick=reveal; $("pPrev").onclick=()=>step(-1); $("pNext").onclick=()=>step(1);
+  $("btnTheme").onclick=()=>{ OPT.theme={auto:"light",light:"dark",dark:"auto"}[OPT.theme]; saveOpt(); applyTheme(); };
+  $("colors").querySelectorAll("button").forEach(b=>b.onclick=()=>{ S.color=b.dataset.c; renderBar(); });
+  const chk=(id,key,after)=>{ const e=$(id); e.checked=OPT[key]; e.onchange=()=>{ OPT[key]=e.checked; saveOpt(); after?after():renderAll(); }; };
+  chk("optCheck","check",()=>{ hideFeedback(); renderBar(); }); chk("optMono","mono"); chk("optSnap","snap"); chk("optLegen","legen",()=>start());
+  ["dur2","dur3","dur4"].forEach(k=>{ const e=$(k), o=$(k+"o"); e.value=OPT[k]; const upd=()=>{ o.textContent=String(OPT[k]).replace(".",",")+" s"; };
+    upd(); e.oninput=()=>{ OPT[k]=+e.value; upd(); saveOpt(); renderCard(); }; });
+  if(noCheckHash){ $("optCheck").disabled=true; $("optCheck").parentElement.title="Durch den Link (#ohne-pruefen) ausgeblendet"; }
+  window.addEventListener("resize",()=>{ if(S.replay) showReplay(S.replay.i); });
+  document.addEventListener("keydown", onKey);
+  document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement && document.body.classList.contains("praes")) setPraes(false); });
+}
+function onKey(e){
+  if(e.target.closest("input,select,textarea")) return;
+  const k=e.key;
+  if((e.ctrlKey||e.metaKey) && k.toLowerCase()==="z"){ e.preventDefault(); undo(); return; }
+  if(k==="Escape"){ if(S.replay) stopReplay(); else if(document.body.classList.contains("praes")) setPraes(false); else hideFeedback(); return; }
+  if(/^[0-9]$/.test(k) && numAllowed()){ typeDigit(k); e.preventDefault(); return; }
+  if(k==="Backspace" && numAllowed()){ backspace(); e.preventDefault(); return; }
+  // Tastatur-Legen im Raster
+  if(layingNow() && isGrid() && ["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","x","X"].includes(k)){
+    e.preventDefault(); const g=set(); S.kcur=S.kcur||{r:0,c:0};
+    if(k==="ArrowLeft") S.kcur.c=Math.max(0,S.kcur.c-1); if(k==="ArrowRight") S.kcur.c=Math.min(g.cols-1,S.kcur.c+1);
+    if(k==="ArrowUp") S.kcur.r=Math.max(0,S.kcur.r-1); if(k==="ArrowDown") S.kcur.r=Math.min(g.rows-1,S.kcur.r+1);
+    if(k==="x"||k==="X"){ pushUndo(); const key=S.kcur.r+","+S.kcur.c; if(S.placed[key]){ delete S.placed[key]; log("Plättchen weggenommen",{gelegt:placedCount()}); } else { S.placed[key]=S.color; log("Plättchen gelegt",{gelegt:placedCount()}); } }
+    renderBoard(); return;
+  }
+  if(e.target.closest("button")) return;
+  if(k===" "){ e.preventDefault(); if(flashStage() && S.phase!=="zeigen"){ if(S.phase!=="bereit") useHelp("Noch einmal zeigen"); flash(curDur()); } else if(S.stufe===6) testFlash(); return; }
+  if(k==="Enter"){ e.preventDefault(); check(); return; }
+  if(k==="a"||k==="A"){ reveal(); return; }
+  if(k==="ArrowRight"){ step(1); return; } if(k==="ArrowLeft"){ step(-1); return; }
+}
+function readHash(){
+  const h=decodeURIComponent(location.hash.replace(/^#/,"")); if(!h) return;
+  h.split("&").forEach(p=>{ const [k,v]=p.split("=");
+    if(k==="ohne-pruefen") noCheckHash=true;
+    if(k==="satz" && SETS[v]) S.set=v;
+    if(k==="stufe" && +v>=1 && +v<=6) S.stufe=+v;
+    if(k==="karte") S._karte=+v-1;
+    if(k==="praesentation") S._praes=true; });
+  if(S._karte>=0 && S._karte<CARDS[S.set].length) S.idx=S._karte;
+}
+
+loadOpt(); readHash(); applyTheme(); bind(); start(true);
+window.addEventListener("hashchange",()=>{ closeAttempt(); noCheckHash=false; readHash(); $("optCheck").disabled=noCheckHash; start(true); });
+if(S._praes) setPraes(true);
+</script>
+</body>
+</html>
