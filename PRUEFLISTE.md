@@ -108,8 +108,8 @@ Legende Bild: `r` = rotes Plättchen, `b` = blaues Plättchen, `.` = leeres Feld
 | 3 Blitz | vor dem Zeigen | Tippe auf „Zeigen“. Das Bild blitzt nur kurz auf. Wie viele sind es? |
 | 4 Ohne Linien | vor dem Zeigen | Tippe auf „Zeigen“. Jetzt ganz kurz und ohne Linien. Wie viele sind es? |
 | 2–4 | während des Zeigens | Schau genau hin! |
-| 2–4 | abgedeckt | Wie viele hast du gesehen? Tippe die Zahl. Wie hast du sie gesehen? |
-| 2–4 | abgedeckt, Option „nachlegen“ | Lege nach, was du gesehen hast. |
+| 2–4 | abgedeckt | Wie viele hast du gesehen? Tippe die Zahl. Du kannst auch nochmal schauen. |
+| 2–4 | abgedeckt, Option „nachlegen“ | Lege nach, was du gesehen hast. Du kannst auch nochmal schauen. |
 | 2–4 | aufgedeckt | Kreise ein, wie du die Zahl gesehen hast. |
 | 5 Worte | – | „[Kartentext]“ – Lege so, wie es hier steht. |
 | 6 Erfinden | – | Lege eine Zahl so, dass man schnell sieht, wie viele es sind. Tippe deine Zahl dazu. Zum Beispiel die [n]. |
@@ -131,11 +131,11 @@ Voreingestellte Zeigedauern: Stufe 2 = 3 s, Stufe 3 = 1 s, Stufe 4 = 0,7 s (Orie
 |---|---|---|
 | Zahl richtig, noch abgedeckt | Passt! – Decke auf und kreise ein, wie du es gesehen hast. | – |
 | Zahl richtig, Bild sichtbar | Passt! – Wie hast du es gesehen? Kreise ein. | – |
-| Zahl falsch | Passt noch nicht. | Deine Zahl ist zu groß. / Deine Zahl ist zu klein. |
+| Zahl falsch | Passt noch nicht. – Knopf „Nochmal schauen“ (solange das Bild verdeckt ist) | Deine Zahl ist zu groß. / Deine Zahl ist zu klein. |
 | keine Zahl | Tippe zuerst eine Zahl. | – |
 | Nachlegen, Anzahl richtig, gleiches Bild | Passt! | – |
 | Nachlegen, Anzahl richtig, anders gelegt | Passt! – Du hast anders gelegt. Das ist auch richtig, wenn es dieselbe Anzahl ist. | – |
-| Nachlegen, Anzahl falsch | Passt noch nicht. | Es sind [k] Plättchen zu viel. / Es fehlt 1 Plättchen. / Es fehlen [k] Plättchen. – im Raster zusätzlich Markierung: „Hier lag auf der Karte ein Plättchen“ / „Hier lag keins“ |
+| Nachlegen, Anzahl falsch | Passt noch nicht. – Knopf „Nochmal schauen“ (solange das Bild verdeckt ist) | Es sind [k] Plättchen zu viel. / Es fehlt 1 Plättchen. / Es fehlen [k] Plättchen. – im Raster zusätzlich Markierung: „Hier lag auf der Karte ein Plättchen“ / „Hier lag keins“ |
 | Erfinden, passt | Passt! – Teste mit „Blitz testen“: Sieht man schnell, wie viele es sind? Warum? | – |
 | Erfinden, passt nicht | Passt noch nicht. | Es liegt 1 Plättchen / liegen [k] Plättchen mehr als deine Zahl. / Es fehlt 1 Plättchen / fehlen [k] Plättchen bis zu deiner Zahl. |
 | Erfinden, keine Zahl | Tippe auch deine Zahl. | – |
@@ -153,3 +153,7 @@ Angelehnt an den Mahiko-Wortspeicher „Zahlen schnell sehen“, teilweise selbs
 ## 6 Hinweise für Lehrkräfte (aufklappbarer Bereich)
 
 Sinngemäß nach dem Zahlenbuch-Lehrerband (Grundlegung vor Automatisierung) und dem PIKAS-Beobachtungsbogen (Leitfrage, „länger zeigen“); selbst zusammengefasst – bitte prüfen, ob die Zuschreibung „Wittmann/Müller, Zahlenbuch“ so stehen bleiben soll.
+
+## 7 Hilfe „Nochmal schauen“ (Stufen 2–4)
+
+Solange das Bild verdeckt ist, steht „Nochmal schauen“ auf dem Tuch (im Nachlege-Modus unten in der Leiste), in der Rückmeldung „Passt noch nicht.“ und in der Seitenleiste. Das Bild kommt erneut mit derselben Zeigedauer; jedes Mal wird als Hilfe protokolliert. Gedacht für die Einzelarbeit; Aufdecken und Besprechen mit Lehrkraft oder Tandem bleiben möglich.

@@ -121,6 +121,7 @@ code{font-size:.85em;background:var(--board);padding:1px 4px;border-radius:4px}
 .cover .q{font-family:var(--f-display);font-size:clamp(3rem,10vw,6rem);font-weight:700;line-height:1}
 .cover .ct{font-size:1.1rem;max-width:30ch}
 .cover .btn{font-size:1.25rem;min-height:60px;padding:10px 28px;border:0;background:#FFFFFF;color:#173A47}
+.cover #coverAgain{background:transparent;color:var(--cover-ink);border:2px solid rgba(255,255,255,.7);font-size:1.1rem;min-height:52px}
 .timer{position:absolute;left:14px;right:14px;top:6px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
 .timer i{display:block;height:100%;width:100%;background:var(--accent);transform-origin:left}
 .feedback{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:10px 12px 10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;box-shadow:0 4px 18px rgba(0,0,0,.14);max-width:calc(100% - 32px);font-weight:700;z-index:3}
@@ -279,6 +280,7 @@ details.lk ul{padding-left:18px;margin:6px 0}
         <div class="q" id="coverQ">?</div>
         <div class="ct" id="coverT"></div>
         <button class="btn" id="coverBtn">Zeigen</button>
+        <button class="btn" id="coverAgain" hidden>Nochmal schauen</button>
       </div>
       <div class="feedback" id="feedback" role="status" hidden></div>
       <div class="replaybar" id="replaybar" hidden>
@@ -311,6 +313,7 @@ details.lk ul{padding-left:18px;margin:6px 0}
       </div>
       <div class="actions">
         <button class="btn primary" id="btnShow">Zeigen</button>
+        <button class="btn" id="btnAgain">Nochmal schauen</button>
         <button class="btn" id="btnOpen">Aufdecken</button>
         <button class="btn" id="btnTest">Blitz testen</button>
         <button class="btn primary" id="btnCheck">Prüfen</button>
@@ -590,7 +593,7 @@ function renderHelps(){
     const n=S.helps[label]; b.innerHTML=label+(n?` <span class="cnt">${n}</span>`:""); b.onclick=()=>{ useHelp(label); fn(); }; h.appendChild(b); };
   const blank = S.phase==="bereit";
   if(flashStage()){
-    add("hAgain","Noch einmal zeigen",()=>flash(curDur()), !blank && S.phase!=="zeigen" && S.phase!=="offen");
+    add("hAgain","Nochmal schauen",()=>flash(curDur()), !blank && S.phase!=="zeigen" && S.phase!=="offen");
     add("hLong","Länger zeigen",()=>flash(curDur()*2), !blank && S.phase!=="zeigen" && S.phase!=="offen");
     if(S.stufe===4) add("hLines","Mit Linien zeigen",()=>{ S.lines=true; flash(curDur()); }, !blank && S.phase!=="zeigen" && S.phase!=="offen");
   }
@@ -618,7 +621,7 @@ function auftrag(){
         : S.stufe===3? "Tippe auf „Zeigen“. Das Bild blitzt nur kurz auf. Wie viele sind es?"
         : "Tippe auf „Zeigen“. Jetzt ganz kurz und ohne Linien. Wie viele sind es?";
       if(S.phase==="zeigen") return "Schau genau hin!";
-      if(S.phase==="verdeckt") return OPT.legen? "Lege nach, was du gesehen hast." : "Wie viele hast du gesehen? Tippe die Zahl. Wie hast du sie gesehen?";
+      if(S.phase==="verdeckt") return OPT.legen? "Lege nach, was du gesehen hast. Du kannst auch nochmal schauen." : "Wie viele hast du gesehen? Tippe die Zahl. Du kannst auch nochmal schauen.";
       return "Kreise ein, wie du die Zahl gesehen hast.";
     case 5: return `<span class="worte">„${cd.worte}“</span>`+(/^Lege/.test(cd.worte)?"":"<br>Lege so, wie es hier steht.");
     case 6: return `Lege eine Zahl so, dass man schnell sieht, wie viele es sind. Tippe deine Zahl dazu. Zum Beispiel die ${n}.`;
@@ -640,6 +643,7 @@ function renderBar(){
   $("colors").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.c===S.color));
   $("btnShow").hidden = !(flashStage() && S.phase==="bereit");
   $("btnOpen").hidden = !(flashStage() && S.phase==="verdeckt");
+  $("btnAgain").hidden = !(flashStage() && S.phase==="verdeckt" && OPT.legen);
   $("btnTest").hidden = S.stufe!==6;
   $("btnCheck").hidden = !canCheck() || (flashStage() && (S.phase==="bereit"||S.phase==="zeigen"));
   document.body.classList.toggle("mono", OPT.mono);
@@ -723,6 +727,7 @@ function renderCover(){
   const show = flashStage() && (S.phase==="bereit" || (S.phase==="verdeckt" && !OPT.legen)) && !S.peek && !S.replay;
   const test = S.testPhase;
   cov.hidden = !(show || test==="warte" || test==="verdeckt");
+  $("coverAgain").hidden = !(flashStage() && S.phase==="verdeckt" && !test);
   if(test==="warte"){ $("coverQ").textContent="…"; $("coverT").textContent="Gleich kommt dein Bild."; $("coverBtn").hidden=true; return; }
   if(test==="verdeckt"){ $("coverQ").textContent="?"; $("coverT").textContent="Wie viele waren es? Sieht man es schnell? Tippe, um wieder zu legen."; $("coverBtn").hidden=true; return; }
   if(S.phase==="bereit"){ $("coverQ").textContent="?"; $("coverT").textContent="Bereit?"; $("coverBtn").hidden=false; $("coverBtn").textContent="Zeigen"; }
@@ -744,6 +749,10 @@ function runTimer(sec){
   const t=$("timer"), b=$("timerBar"); t.hidden=false;
   b.style.transition="none"; b.style.transform="scaleX(1)"; void b.offsetWidth;
   b.style.transition=`transform ${sec}s linear`; b.style.transform="scaleX(0)";
+}
+function again(){ // Hilfe „Nochmal schauen“: gleiches Bild, gleiche Dauer, wird protokolliert
+  if(!(flashStage() && S.phase==="verdeckt")) return;
+  useHelp("Nochmal schauen"); flash(curDur());
 }
 function reveal(){
   if(!(flashStage() && S.phase==="verdeckt")) return;
@@ -820,6 +829,8 @@ function markDone(){ S.done[S.set+":"+S.idx+":"+S.stufe]=true; renderPanel(); }
 function showFeedback(ok, title, det, detFn, legend){
   const f=$("feedback"); f.hidden=false; f.className="feedback"+(ok?" ok":"");
   f.innerHTML=""; const t=document.createElement("span"); t.textContent=title; f.appendChild(t);
+  if(!ok && flashStage() && S.phase==="verdeckt" && /^Passt noch nicht/.test(title)){
+    const a=document.createElement("button"); a.className="btn small primary"; a.textContent="Nochmal schauen"; a.onclick=again; f.appendChild(a); }
   if(detFn){ const b=document.createElement("button"); b.className="btn small"; b.textContent="Wo hakt es?";
     b.onclick=()=>{ log("Hilfe beim Prüfen: Wo hakt es?"); const d=document.createElement("div"); d.className="det"; d.textContent=detFn(); b.replaceWith(d);
       if(legend){ const lg=document.createElement("div"); lg.className="legend";
@@ -958,14 +969,14 @@ function applyTheme(){
 /* ---------- Ereignisse ---------- */
 function bind(){
   buildPad();
-  $("btnShow").onclick=()=>flash(curDur()); $("coverBtn").onclick=e=>{ e.stopPropagation(); flash(curDur()); };
+  $("btnShow").onclick=()=>flash(curDur()); $("coverBtn").onclick=e=>{ e.stopPropagation(); flash(curDur()); }; $("coverAgain").onclick=e=>{ e.stopPropagation(); again(); }; $("btnAgain").onclick=again;
   $("cover").onclick=()=>{ if(S.testPhase==="verdeckt"){ S.testPhase=null; renderAll(); } else if(S.phase==="bereit") flash(curDur()); };
   $("btnOpen").onclick=reveal; $("btnCheck").onclick=check; $("btnNext").onclick=()=>step(1); $("btnTest").onclick=testFlash;
   $("btnUndo").onclick=undo; $("btnReset").onclick=()=>start(); $("btnReplay").onclick=startReplay;
   $("rpClose").onclick=()=>stopReplay(); $("rpPlay").onclick=playReplay; $("rpSlider").oninput=e=>{ if(S.replay){ S.replay.playing=false; $("rpPlay").textContent="Abspielen"; showReplay(+e.target.value);} };
   $("btnCsv").onclick=exportCsv; $("btnJson").onclick=exportJson;
   $("btnPraes").onclick=()=>setPraes(true); $("pExit").onclick=()=>setPraes(false);
-  $("pShow").onclick=()=>{ if(flashStage()&&S.phase!=="zeigen"){ if(S.phase!=="bereit") useHelp("Noch einmal zeigen"); flash(curDur()); } };
+  $("pShow").onclick=()=>{ if(flashStage()&&S.phase!=="zeigen"){ if(S.phase!=="bereit") useHelp("Nochmal schauen"); flash(curDur()); } };
   $("pOpen").onclick=reveal; $("pPrev").onclick=()=>step(-1); $("pNext").onclick=()=>step(1);
   $("btnTheme").onclick=()=>{ OPT.theme={auto:"light",light:"dark",dark:"auto"}[OPT.theme]; saveOpt(); applyTheme(); };
   $("colors").querySelectorAll("button").forEach(b=>b.onclick=()=>{ S.color=b.dataset.c; renderBar(); });
@@ -994,7 +1005,7 @@ function onKey(e){
     renderBoard(); return;
   }
   if(e.target.closest("button")) return;
-  if(k===" "){ e.preventDefault(); if(flashStage() && S.phase!=="zeigen"){ if(S.phase!=="bereit") useHelp("Noch einmal zeigen"); flash(curDur()); } else if(S.stufe===6) testFlash(); return; }
+  if(k===" "){ e.preventDefault(); if(flashStage() && S.phase!=="zeigen"){ if(S.phase!=="bereit") useHelp("Nochmal schauen"); flash(curDur()); } else if(S.stufe===6) testFlash(); return; }
   if(k==="Enter"){ e.preventDefault(); check(); return; }
   if(k==="a"||k==="A"){ reveal(); return; }
   if(k==="ArrowRight"){ step(1); return; } if(k==="ArrowLeft"){ step(-1); return; }
